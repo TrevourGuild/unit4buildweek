@@ -13,10 +13,14 @@ async function insertUser(user) {
   return newUserObject // { user_id: 7, username: 'foo', password: 'xxxxxxx' }
 }
 
+const registerRouter = require('./routers/register-router')
+
 const server = express()
 server.use(express.json())
 server.use(helmet())
 server.use(cors())
+
+server.use('/api/register', registerRouter)
 
 server.get('/api/users', async (req, res) => {
   res.json(await getAllUsers())
@@ -25,5 +29,13 @@ server.get('/api/users', async (req, res) => {
 server.post('/api/users', async (req, res) => {
   res.status(201).json(await insertUser(req.body))
 })
+
+server.use((err, req, res, next) => { // eslint-disable-line
+  res.status(err.status || 500).json({
+    message: err.message,
+    stack: err.stack,
+  });
+});
+
 
 module.exports = server
